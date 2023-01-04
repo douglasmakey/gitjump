@@ -15,6 +15,11 @@ To install GitJump, clone this repository and run the following command:
 ```bash
 $ go install
 ```
+Or
+
+```bash
+go install github.com/douglasmakey/gitjump@latest
+```
 
 ## Usage
 
