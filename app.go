@@ -3,6 +3,7 @@ package main
 import (
 	"bufio"
 	"bytes"
+	"errors"
 	"fmt"
 	"io"
 	"math"
@@ -21,7 +22,18 @@ var (
 func runGitCommand(out io.Writer, params ...string) error {
 	c := exec.Command("git", params...)
 	c.Stdout = out
-	return c.Run()
+	if err := c.Run(); err != nil {
+		var exerr *exec.ExitError
+		if errors.As(err, &exerr) {
+			code := exerr.ExitCode()
+			if code == 127 || code == 128 {
+				return fmt.Errorf("git not found or not a git repository: %w", err)
+			}
+		}
+		return err
+	}
+
+	return nil
 }
 
 func goToNth(n int) error {
@@ -31,7 +43,7 @@ func goToNth(n int) error {
 	}
 
 	if err := runGitCommand(&buffer, "rev-list", "--count", branch); err != nil {
-		return err
+		return fmt.Errorf("git rev-list failed: %w", err)
 	}
 
 	commitsQty, err := strconv.Atoi(string(buffer.Bytes()[0 : buffer.Len()-1]))
@@ -41,7 +53,7 @@ func goToNth(n int) error {
 
 	buffer.Reset()
 	if err := runGitCommand(&buffer, "log", "--reverse", "--oneline"); err != nil {
-		return err
+		return fmt.Errorf("git log failed: %w", err)
 	}
 
 	r := bufio.NewReader(&buffer)
