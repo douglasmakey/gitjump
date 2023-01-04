@@ -101,7 +101,7 @@ func root() *coral.Command {
 		Use:           "gitjump",
 		Short:         "",
 		SilenceErrors: true,
-		SilenceUsage:  false,
+		SilenceUsage:  true,
 		RunE: func(cmd *coral.Command, args []string) error {
 			return run(to)
 		},
